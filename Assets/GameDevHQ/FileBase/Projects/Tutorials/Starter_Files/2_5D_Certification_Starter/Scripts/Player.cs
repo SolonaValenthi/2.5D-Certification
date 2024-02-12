@@ -14,6 +14,7 @@ public class Player : MonoBehaviour
  
     private float _yVelocity;
     private float _rotationSpeed;
+    private bool _ledgeGrabbed = false;
     private PlayerInputActions _input;
     
     Vector3 _velocity;
@@ -40,14 +41,17 @@ public class Player : MonoBehaviour
         _velocity = new Vector3(0, 0, move) * _moveSpeed;
         _anim.SetFloat("Speed", Mathf.Abs(move));
 
-        if (!_controller.isGrounded)
+        if (!_ledgeGrabbed)
         {
-            _yVelocity -= _gravityForce * Time.deltaTime;
-        }
+            if (!_controller.isGrounded)
+            {
+                _yVelocity -= _gravityForce * Time.deltaTime;
+            }
 
-        _velocity.y = _yVelocity;
-        RotateModel(move);
-        _controller.Move(_velocity * Time.deltaTime);
+            _velocity.y = _yVelocity;
+            RotateModel(move);
+            _controller.Move(_velocity * Time.deltaTime);
+        }
 
         if (_controller.isGrounded)
             _anim.SetBool("Jump", false);
@@ -76,5 +80,17 @@ public class Player : MonoBehaviour
             _yVelocity = _jumpForce;
             _anim.SetBool("Jump", true);
         }  
+    }
+
+    public void GrabLedge(Vector3 ledgeAnchor)
+    {
+        if (!_controller.isGrounded)
+        {
+            _anim.SetBool("LedgeGrab", true);
+            _ledgeGrabbed = true;
+            _yVelocity = 0;
+            _controller.enabled = false;
+            transform.position = ledgeAnchor;
+        }
     }
 }
