@@ -11,10 +11,12 @@ public class Player : MonoBehaviour
     [SerializeField] private float _gravityForce;
     [SerializeField] private Animator _anim;
     [SerializeField] private GameObject _playerModel;
+    [SerializeField] private Vector3 _climbingOffset;
  
     private float _yVelocity;
     private float _rotationSpeed;
     private bool _ledgeGrabbed = false;
+    private bool _canTurn = true;
     private PlayerInputActions _input;
     
     Vector3 _velocity;
@@ -27,6 +29,7 @@ public class Player : MonoBehaviour
         _input = new PlayerInputActions();
         _input.Player.Enable();
         _input.Player.Jump.performed += Jump;
+        _input.Player.Climb.performed += ClimbUp;
     }
 
     // Update is called once per frame
@@ -61,16 +64,19 @@ public class Player : MonoBehaviour
     {
         float rotation;
 
-        if (movement < 0)
+        if (_canTurn)
         {
-            rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 180, ref _rotationSpeed, 0.1f);
-            _playerModel.transform.rotation = Quaternion.Euler(0, rotation, 0);
+            if (movement < 0)
+            {
+                rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 180, ref _rotationSpeed, 0.1f);
+                _playerModel.transform.rotation = Quaternion.Euler(0, rotation, 0);
+            }
+            else if (movement > 0)
+            {
+                rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 0, ref _rotationSpeed, 0.1f);
+                _playerModel.transform.rotation = Quaternion.Euler(0, rotation, 0);
+            }
         }
-        else if (movement > 0)
-        {
-            rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 0, ref _rotationSpeed, 0.1f);
-            _playerModel.transform.rotation = Quaternion.Euler(0, rotation, 0);
-        }       
     }
 
     private void Jump(InputAction.CallbackContext context)
@@ -82,15 +88,35 @@ public class Player : MonoBehaviour
         }  
     }
 
+    private void ClimbUp(InputAction.CallbackContext context)
+    {
+        if (_ledgeGrabbed)
+        {
+            _ledgeGrabbed = false;
+            _anim.SetBool("LedgeGrab", false);
+            _anim.SetTrigger("ClimbUp");
+        }
+    }
+
     public void GrabLedge(Vector3 ledgeAnchor)
     {
         if (!_controller.isGrounded)
         {
-            _anim.SetBool("LedgeGrab", true);
             _ledgeGrabbed = true;
+            _canTurn = false;
+            _anim.SetBool("LedgeGrab", _ledgeGrabbed);
+            _anim.SetBool("Jump", false);
+            _anim.SetFloat("Speed", 0.0f);
             _yVelocity = 0;
             _controller.enabled = false;
             transform.position = ledgeAnchor;
         }
+    }
+
+    public void ClimbUpCompleted()
+    {
+        transform.position += _climbingOffset;
+        _controller.enabled = true;
+        _canTurn = true;
     }
 }
