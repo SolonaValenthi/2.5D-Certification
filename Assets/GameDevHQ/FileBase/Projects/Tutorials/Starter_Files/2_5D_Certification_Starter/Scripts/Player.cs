@@ -40,13 +40,13 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Elevator"))
+        if (other.CompareTag("Elevator") || other.CompareTag("MovingPlatform"))
             transform.parent = other.transform;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Elevator"))
+        if (other.CompareTag("Elevator") || other.CompareTag("MovingPlatform"))
             transform.parent = null;
     }
 
