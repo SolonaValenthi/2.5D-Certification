@@ -38,6 +38,18 @@ public class Player : MonoBehaviour
         CalculateMovement();
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Elevator"))
+            transform.parent = other.transform;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Elevator"))
+            transform.parent = null;
+    }
+
     private void CalculateMovement()
     {
         float move = _input.Player.Movement.ReadValue<float>();
@@ -68,12 +80,12 @@ public class Player : MonoBehaviour
         {
             if (movement < 0)
             {
-                rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 180, ref _rotationSpeed, 0.1f);
+                rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 180, ref _rotationSpeed, 0.05f);
                 _playerModel.transform.rotation = Quaternion.Euler(0, rotation, 0);
             }
             else if (movement > 0)
             {
-                rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 0, ref _rotationSpeed, 0.1f);
+                rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 0, ref _rotationSpeed, 0.05f);
                 _playerModel.transform.rotation = Quaternion.Euler(0, rotation, 0);
             }
         }
