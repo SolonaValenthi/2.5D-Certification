@@ -14,9 +14,12 @@ public class Player : MonoBehaviour
     [SerializeField] private Vector3 _climbingOffset;
  
     private float _yVelocity;
-    private float _rotationSpeed;
+    private float _rollSpeed;
+    private float _move;
     private bool _ledgeGrabbed = false;
     private bool _canTurn = true;
+    private bool _rolling = false;
+    private bool _faceRight = true;
     private PlayerInputActions _input;
     
     Vector3 _velocity;
@@ -30,6 +33,7 @@ public class Player : MonoBehaviour
         _input.Player.Enable();
         _input.Player.Jump.performed += Jump;
         _input.Player.Climb.performed += ClimbUp;
+        _input.Player.Roll.performed += Roll;
     }
 
     // Update is called once per frame
@@ -52,9 +56,12 @@ public class Player : MonoBehaviour
 
     private void CalculateMovement()
     {
-        float move = _input.Player.Movement.ReadValue<float>();
-        _velocity = new Vector3(0, 0, move) * _moveSpeed;
-        _anim.SetFloat("Speed", Mathf.Abs(move));
+        if (!_rolling)
+        {
+            _move = _input.Player.Movement.ReadValue<float>();
+            _velocity = new Vector3(0, 0, _move) * _moveSpeed;
+            _anim.SetFloat("Speed", Mathf.Abs(_move));
+        }
 
         if (!_ledgeGrabbed)
         {
@@ -64,7 +71,7 @@ public class Player : MonoBehaviour
             }
 
             _velocity.y = _yVelocity;
-            RotateModel(move);
+            RotateModel(_move);
             _controller.Move(_velocity * Time.deltaTime);
         }
 
@@ -80,20 +87,22 @@ public class Player : MonoBehaviour
         {
             if (movement < 0)
             {
-                rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 180, ref _rotationSpeed, 0.05f);
+                rotation = 180;
                 _playerModel.transform.rotation = Quaternion.Euler(0, rotation, 0);
+                _faceRight = false;
             }
             else if (movement > 0)
             {
-                rotation = Mathf.SmoothDampAngle(_playerModel.transform.eulerAngles.y, 0, ref _rotationSpeed, 0.05f);
+                rotation = 0;
                 _playerModel.transform.rotation = Quaternion.Euler(0, rotation, 0);
+                _faceRight = true;
             }
         }
     }
 
     private void Jump(InputAction.CallbackContext context)
     {
-        if (_controller.isGrounded)
+        if (_controller.isGrounded && !_rolling)
         {
             _yVelocity = _jumpForce;
             _anim.SetBool("Jump", true);
@@ -107,6 +116,23 @@ public class Player : MonoBehaviour
             _ledgeGrabbed = false;
             _anim.SetBool("LedgeGrab", false);
             _anim.SetTrigger("ClimbUp");
+        }
+    }
+
+    private void Roll(InputAction.CallbackContext context)
+    {
+        if (_controller.isGrounded && !_rolling)
+        {
+            _canTurn = false;
+            _rolling = true;
+            _anim.SetTrigger("Roll");
+
+            if (_faceRight)
+                _rollSpeed = _moveSpeed;
+            else
+                _rollSpeed = -_moveSpeed;
+
+            _velocity.z = _rollSpeed;
         }
     }
 
@@ -130,5 +156,12 @@ public class Player : MonoBehaviour
         transform.position += _climbingOffset;
         _controller.enabled = true;
         _canTurn = true;
+    }
+
+    public void RollCompleted()
+    {
+        _canTurn = true;
+        _rolling = false;
+        _rollSpeed = 0;
     }
 }
