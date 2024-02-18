@@ -8,6 +8,7 @@ TagManager:
   - LedgeCheck
   - Elevator
   - MovingPlatform
+  - Ladder
   layers:
   - Default
   - TransparentFX

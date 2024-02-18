@@ -62,6 +62,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""LadderMovement"",
+                    ""type"": ""Button"",
+                    ""id"": ""2117a456-1380-437f-9c74-95bdedd68e94"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -130,6 +139,39 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Roll"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Keyboard"",
+                    ""id"": ""506a421e-24ab-4b3d-ab59-c456c269c632"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LadderMovement"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""99afd8ac-0a98-48a9-9316-0a095c86d734"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LadderMovement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""33785781-558b-4315-8580-e658d65c10c6"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LadderMovement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -142,6 +184,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Climb = m_Player.FindAction("Climb", throwIfNotFound: true);
         m_Player_Roll = m_Player.FindAction("Roll", throwIfNotFound: true);
+        m_Player_LadderMovement = m_Player.FindAction("LadderMovement", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -207,6 +250,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Climb;
     private readonly InputAction m_Player_Roll;
+    private readonly InputAction m_Player_LadderMovement;
     public struct PlayerActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -215,6 +259,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputAction @Climb => m_Wrapper.m_Player_Climb;
         public InputAction @Roll => m_Wrapper.m_Player_Roll;
+        public InputAction @LadderMovement => m_Wrapper.m_Player_LadderMovement;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -236,6 +281,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Roll.started += instance.OnRoll;
             @Roll.performed += instance.OnRoll;
             @Roll.canceled += instance.OnRoll;
+            @LadderMovement.started += instance.OnLadderMovement;
+            @LadderMovement.performed += instance.OnLadderMovement;
+            @LadderMovement.canceled += instance.OnLadderMovement;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -252,6 +300,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Roll.started -= instance.OnRoll;
             @Roll.performed -= instance.OnRoll;
             @Roll.canceled -= instance.OnRoll;
+            @LadderMovement.started -= instance.OnLadderMovement;
+            @LadderMovement.performed -= instance.OnLadderMovement;
+            @LadderMovement.canceled -= instance.OnLadderMovement;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -275,5 +326,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnClimb(InputAction.CallbackContext context);
         void OnRoll(InputAction.CallbackContext context);
+        void OnLadderMovement(InputAction.CallbackContext context);
     }
 }

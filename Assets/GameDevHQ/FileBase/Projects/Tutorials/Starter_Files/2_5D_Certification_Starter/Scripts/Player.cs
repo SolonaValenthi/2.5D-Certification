@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class Player : MonoBehaviour
 {
     [SerializeField] private float _moveSpeed;
+    [SerializeField] private float _climbSpeed;
     [SerializeField] private float _jumpForce;
     [SerializeField] private float _gravityForce;
     [SerializeField] private Animator _anim;
@@ -16,6 +17,8 @@ public class Player : MonoBehaviour
     private float _yVelocity;
     private float _rollSpeed;
     private float _move;
+    private bool _nearLadder = false;
+    private bool _onLadder = false;
     private bool _ledgeGrabbed = false;
     private bool _canTurn = true;
     private bool _rolling = false;
@@ -24,6 +27,7 @@ public class Player : MonoBehaviour
     
     Vector3 _velocity;
     CharacterController _controller;
+    Ladder _ladder;
 
     // Start is called before the first frame update
     void Start()
@@ -39,19 +43,31 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        CalculateMovement();
+        if (_onLadder)
+            LadderMovement();
+        else
+            CalculateMovement();
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Elevator") || other.CompareTag("MovingPlatform"))
             transform.parent = other.transform;
+
+        if (other.CompareTag("Ladder"))
+        {
+            _ladder = other.GetComponent<Ladder>();
+            _nearLadder = true;
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Elevator") || other.CompareTag("MovingPlatform"))
             transform.parent = null;
+
+        if (other.CompareTag("Ladder"))
+            _nearLadder = false;
     }
 
     private void CalculateMovement()
@@ -117,6 +133,10 @@ public class Player : MonoBehaviour
             _anim.SetBool("LedgeGrab", false);
             _anim.SetTrigger("ClimbUp");
         }
+        else if (_nearLadder && !_onLadder)
+        {
+            LadderGrab(_ladder);
+        }
     }
 
     private void Roll(InputAction.CallbackContext context)
@@ -134,6 +154,23 @@ public class Player : MonoBehaviour
 
             _velocity.z = _rollSpeed;
         }
+    }
+
+    private void LadderGrab(Ladder ladder)
+    {
+        _controller.enabled = false;
+        transform.position = ladder.GetAnchor();
+        _onLadder = true;
+        _anim.SetBool("OnLadder", true);
+        _controller.enabled = true;
+    }
+
+    private void LadderMovement()
+    {
+        float move = _input.Player.LadderMovement.ReadValue<float>();
+        Vector3 velocity = new Vector3(0, move, 0) * _climbSpeed;
+        _anim.SetFloat("LadderSpeed", move);
+        _controller.Move(velocity * Time.deltaTime);
     }
 
     public void GrabLedge(Vector3 ledgeAnchor)
