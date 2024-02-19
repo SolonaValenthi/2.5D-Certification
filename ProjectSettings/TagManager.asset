@@ -9,6 +9,8 @@ TagManager:
   - Elevator
   - MovingPlatform
   - Ladder
+  - LadderBottom
+  - LadderTop
   layers:
   - Default
   - TransparentFX

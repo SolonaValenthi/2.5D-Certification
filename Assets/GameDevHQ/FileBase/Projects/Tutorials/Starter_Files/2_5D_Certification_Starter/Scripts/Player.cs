@@ -19,6 +19,8 @@ public class Player : MonoBehaviour
     private float _move;
     private bool _nearLadder = false;
     private bool _onLadder = false;
+    private bool _atBottom = false;
+    private bool _atTop = false;
     private bool _ledgeGrabbed = false;
     private bool _canTurn = true;
     private bool _rolling = false;
@@ -59,6 +61,13 @@ public class Player : MonoBehaviour
             _ladder = other.GetComponent<Ladder>();
             _nearLadder = true;
         }
+
+        if (other.CompareTag("LadderBottom"))
+            _atBottom = true;
+
+        if (other.CompareTag("LadderTop"))
+            _atTop = true;
+
     }
 
     private void OnTriggerExit(Collider other)
@@ -68,6 +77,12 @@ public class Player : MonoBehaviour
 
         if (other.CompareTag("Ladder"))
             _nearLadder = false;
+
+        if (other.CompareTag("LadderBottom"))
+            _atBottom = false;
+
+        if (other.CompareTag("LadderTop"))
+            _atTop = false;
     }
 
     private void CalculateMovement()
@@ -159,7 +174,7 @@ public class Player : MonoBehaviour
     private void LadderGrab(Ladder ladder)
     {
         _controller.enabled = false;
-        transform.position = ladder.GetAnchor();
+        transform.position = ladder.GetLadderAnchor();
         _onLadder = true;
         _anim.SetBool("OnLadder", true);
         _controller.enabled = true;
@@ -171,6 +186,21 @@ public class Player : MonoBehaviour
         Vector3 velocity = new Vector3(0, move, 0) * _climbSpeed;
         _anim.SetFloat("LadderSpeed", move);
         _controller.Move(velocity * Time.deltaTime);
+
+        if (_atBottom && move < 0)
+        {
+            _anim.SetBool("OnLadder", false);
+            _onLadder = false;
+        }
+
+        if (_atTop && move > 0)
+        {
+            _controller.enabled = false;
+            transform.position = _ladder.GetClimbAnchor();
+            _anim.SetTrigger("ClimbUp");
+            _canTurn = false;
+            _onLadder = false;
+        }
     }
 
     public void GrabLedge(Vector3 ledgeAnchor)
@@ -190,7 +220,12 @@ public class Player : MonoBehaviour
 
     public void ClimbUpCompleted()
     {
-        transform.position += _climbingOffset;
+        if (_faceRight)
+            transform.position += _climbingOffset;
+        else
+            transform.position += new Vector3(0, _climbingOffset.y, -_climbingOffset.z);
+
+        _anim.SetBool("OnLadder", false);
         _controller.enabled = true;
         _canTurn = true;
     }
@@ -200,5 +235,12 @@ public class Player : MonoBehaviour
         _canTurn = true;
         _rolling = false;
         _rollSpeed = 0;
+    }
+
+    private void OnDisable()
+    {
+        _input.Player.Jump.performed -= Jump;
+        _input.Player.Climb.performed -= ClimbUp;
+        _input.Player.Roll.performed -= Roll;
     }
 }
