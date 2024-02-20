@@ -13,7 +13,8 @@ public class Player : MonoBehaviour
     [SerializeField] private Animator _anim;
     [SerializeField] private GameObject _playerModel;
     [SerializeField] private Vector3 _climbingOffset;
- 
+
+    private int _gemCount = 0;
     private float _yVelocity;
     private float _rollSpeed;
     private float _move;
@@ -227,6 +228,7 @@ public class Player : MonoBehaviour
 
         _anim.SetBool("OnLadder", false);
         _controller.enabled = true;
+        _atTop = false;
         _canTurn = true;
     }
 
@@ -235,6 +237,16 @@ public class Player : MonoBehaviour
         _canTurn = true;
         _rolling = false;
         _rollSpeed = 0;
+    }
+
+    public void CollectGem()
+    {
+        _gemCount++;
+    }
+
+    public int GetGemCount()
+    {
+        return _gemCount;
     }
 
     private void OnDisable()
