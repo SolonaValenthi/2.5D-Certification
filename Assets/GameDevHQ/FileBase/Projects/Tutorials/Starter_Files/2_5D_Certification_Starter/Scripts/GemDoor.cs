@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class GemDoor : MonoBehaviour
 {
     [SerializeField] private int _reqGems;
     [SerializeField] private float _flashTime;
+    [SerializeField] private SpriteRenderer _gemSprite;
     [SerializeField] private MeshRenderer _lightRenderer;
+    [SerializeField] private TextMeshPro _countText;
 
     private bool _isOpen = false;
 
@@ -39,6 +42,8 @@ public class GemDoor : MonoBehaviour
 
     private void CheckGems(Player player)
     {
+        _countText.text = $"{player.GetGemCount()} / {_reqGems}";
+
         if (player.GetGemCount() >= _reqGems)
             OpenDoor();
         else
@@ -47,8 +52,6 @@ public class GemDoor : MonoBehaviour
 
     private void OpenDoor()
     {
-        _anim.SetTrigger("OpenDoor");
-
         foreach (var collider in _colliders)
             collider.enabled = false;
 
@@ -65,6 +68,11 @@ public class GemDoor : MonoBehaviour
     {
         StopCoroutine("ErrorFlash");
 
+        _countText.enabled = true;
+        _gemSprite.enabled = true;
+        _countText.color = Color.green;
+        _gemSprite.color = Color.green;
+
         for (int i = 0; i < 3; i++)
         {
             _lightRenderer.material.SetColor("_EmissionColor", Color.black);
@@ -72,10 +80,19 @@ public class GemDoor : MonoBehaviour
             _lightRenderer.material.SetColor("_EmissionColor", Color.green);
             yield return _flash;
         }
+
+        _countText.enabled = false;
+        _gemSprite.enabled = false;
+        _anim.SetTrigger("OpenDoor");
     }
 
     IEnumerator ErrorFlash()
     {
+        _countText.enabled = true;
+        _gemSprite.enabled = true;
+        _countText.color = Color.red;
+        _gemSprite.color = Color.red;
+
         for (int i = 0; i < 3; i++)
         {
             _lightRenderer.material.SetColor("_EmissionColor", Color.black);
@@ -88,5 +105,7 @@ public class GemDoor : MonoBehaviour
         yield return _flash;
         _lightRenderer.material.SetColor("_EmissionColor", Color.cyan);
         yield return _flash;
+        _countText.enabled = false;
+        _gemSprite.enabled = false;
     }
 }
