@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
     private float _yVelocity;
     private float _rollSpeed;
     private float _move;
+    private float _standingHeight = 1.8f;
+    private float _rollingHeight = 0.8f;
     private bool _nearLadder = false;
     private bool _onLadder = false;
     private bool _atBottom = false;
@@ -29,6 +31,8 @@ public class Player : MonoBehaviour
     private PlayerInputActions _input;
     
     Vector3 _velocity;
+    Vector3 _standingOffset = new Vector3(0, 0.9f, 0);
+    Vector3 _rollingCenter = new Vector3(0, 0.4f, 0);
     CharacterController _controller;
     Ladder _ladder;
 
@@ -162,6 +166,8 @@ public class Player : MonoBehaviour
             _canTurn = false;
             _rolling = true;
             _anim.SetTrigger("Roll");
+            _controller.height = _rollingHeight;
+            _controller.center = _rollingCenter;
 
             if (_faceRight)
                 _rollSpeed = _moveSpeed;
@@ -237,6 +243,8 @@ public class Player : MonoBehaviour
         _canTurn = true;
         _rolling = false;
         _rollSpeed = 0;
+        _controller.height = _standingHeight;
+        _controller.center = _standingOffset;
     }
 
     public void CollectGem()
