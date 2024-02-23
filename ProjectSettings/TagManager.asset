@@ -12,6 +12,8 @@ TagManager:
   - LadderBottom
   - LadderTop
   - Gem
+  - KillZone
+  - Checkpoint
   layers:
   - Default
   - TransparentFX

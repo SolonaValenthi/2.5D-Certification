@@ -31,6 +31,7 @@ public class Player : MonoBehaviour
     private PlayerInputActions _input;
     
     Vector3 _velocity;
+    Vector3 _spawnPoint;
     Vector3 _standingOffset = new Vector3(0, 0.9f, 0);
     Vector3 _rollingCenter = new Vector3(0, 0.4f, 0);
     CharacterController _controller;
@@ -45,6 +46,7 @@ public class Player : MonoBehaviour
         _input.Player.Jump.performed += Jump;
         _input.Player.Climb.performed += ClimbUp;
         _input.Player.Roll.performed += Roll;
+        SetSpawn(transform.position);
     }
 
     // Update is called once per frame
@@ -73,6 +75,8 @@ public class Player : MonoBehaviour
         if (other.CompareTag("LadderTop"))
             _atTop = true;
 
+        if (other.CompareTag("KillZone"))
+            Respawn();
     }
 
     private void OnTriggerExit(Collider other)
@@ -210,6 +214,13 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void Respawn()
+    {
+        _controller.enabled = false;
+        transform.position = _spawnPoint;
+        _controller.enabled = true;
+    }
+
     public void GrabLedge(Vector3 ledgeAnchor)
     {
         if (!_controller.isGrounded)
@@ -255,6 +266,11 @@ public class Player : MonoBehaviour
     public int GetGemCount()
     {
         return _gemCount;
+    }
+
+    public void SetSpawn(Vector3 newSpawn)
+    {
+        _spawnPoint = newSpawn;
     }
 
     private void OnDisable()
